@@ -1,0 +1,111 @@
+#######################################################
+## Amazon Data Science Books Dataset from Kaggle.com ##
+#######################################################
+
+# Getting to know the dataset
+SELECT *
+FROM final_book_dataset_kaggle2
+
+## Data Cleaning ##
+
+#avg_ratings need to be unified. There are versions with a dot and whithout a dot
+UPDATE final_book_dataset_kaggle2
+SET avg_reviews = 4
+WHERE avg_reviews = "4."
+
+UPDATE final_book_dataset_kaggle2
+SET avg_reviews = 3
+WHERE avg_reviews = "3."
+
+UPDATE final_book_dataset_kaggle2
+SET avg_reviews = 2
+WHERE avg_reviews = "2."
+
+# The language column has a lot of commentary. Therefore, we have to delete these values
+SELECT language
+FROM final_book_dataset_kaggle2
+WHERE language NOT LIKE "%English%" AND language NOT LIKE "%Spanish"
+GROUP BY language
+
+UPDATE final_book_dataset_kaggle2
+SET language = Null
+WHERE language NOT LIKE "%English" AND language NOT LIKE "%Spanish";
+
+SELECT language, COUNT(language)
+FROM final_book_dataset_kaggle2
+GROUP BY language
+
+# The column publisher has a value ";"
+
+UPDATE final_book_dataset_kaggle2
+SET publisher = ""
+WHERE publisher is ";"
+
+# The column pages has a values that are not numbers. We delete these rows
+
+DELETE FROM final_book_dataset_kaggle2
+WHERE pages = "Parse complicated HTML"
+
+DELETE FROM final_book_dataset_kaggle2
+WHERE pages LIKE "Full-color%"
+
+DELETE FROM final_book_dataset_kaggle2
+WHERE pages = "Extract data from APIs and web"
+
+DELETE FROM final_book_dataset_kaggle2
+WHERE pages LIKE "Explores%"
+
+DELETE FROM final_book_dataset_kaggle2
+WHERE pages LIKE "Expand%"
+
+DELETE FROM final_book_dataset_kaggle2
+WHERE pages LIKE "Develop%"
+
+## Exploring the dataset ##
+
+# How big is the price range for these books?
+SELECT MIN(price), MAX(price)
+FROM final_book_dataset_kaggle2
+
+# How is the distribution of ratings?
+SELECT avg_reviews, COUNT(avg_reviews)
+FROM final_book_dataset_kaggle2
+GROUP BY avg_reviews
+ORDER BY avg_reviews DESC
+
+# Create view to store data for later visualizations
+CREATE VIEW ratings_distribution AS
+(SELECT avg_reviews, COUNT(avg_reviews)
+ FROM final_book_dataset_kaggle2
+ GROUP BY avg_reviews
+ ORDER BY avg_reviews)
+
+# What are considered the best books for Data Science?
+SELECT title, author, avg_reviews
+FROM final_book_dataset_kaggle2
+WHERE avg_reviews = 5
+ORDER BY 1
+
+# What is the book with the most reviews?
+SELECT title, author, avg_reviews, MAX(n_reviews)
+FROM final_book_dataset_kaggle2
+
+# In which languages are these books written?
+SELECT language, COUNT(*) as "Anzahl"
+FROM final_book_dataset_kaggle2
+GROUP BY language
+
+# Which publisher publishes the most books on this topic?
+SELECT publisher, COUNT(title)
+FROM final_book_dataset_kaggle2
+GROUP BY publisher
+
+# Which publisher publishes the best books on this topic?
+SELECT publisher, avg_reviews
+FROM final_book_dataset_kaggle2
+GROUP BY publisher 
+HAVING avg_reviews = 5
+
+# What is the average page count?
+SELECT MAX(pages), MIN(pages), AVG(pages) 
+FROM final_book_dataset_kaggle2
